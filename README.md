@@ -1,10 +1,10 @@
 <div align="center">
 
-# ☁️ SkyPass Tunnel
+# ☁️ SolarPass Tunnel
 
-### ⚡ We are SkyPass — the game changer. ⚡
+### ⚡ We are SolarPass — the game changer. ⚡
 
-**ما اسکای‌پس هستیم؛ قانون بازی را عوض می‌کنیم.**
+**ما سولارپس هستیم؛ قانون بازی را عوض می‌کنیم.**
 
 تونل معکوس پرسرعت — ساخته‌شده برای عبور از فیلترینگ و بهینه برای گیم و تماس زنده.
 
@@ -16,7 +16,7 @@
 
 ## این چیه؟
 
-**اسکای‌پس تونل** یک تونل معکوس بین **سرور ایران** و **سرور خارج** می‌سازد تا
+**سولارپس تونل** یک تونل معکوس بین **سرور ایران** و **سرور خارج** می‌سازد تا
 سرویس‌هایت — کانفیگ V2Ray/WireGuard، پنل، بازی، تماس تصویری — بدون افت سرعت و با
 پایداری بالا از داخل ایران در دسترس باشند.
 
@@ -24,7 +24,7 @@
 برای **گیم و تماس زنده** حالت‌های مخصوصِ کم‌تأخیر دارد. راه‌اندازی با یک **منوی
 تعاملی** انجام می‌شود — بدون نیاز به دست‌کاری فایل.
 
-### چرا اسکای‌پس؟
+### چرا سولارپس؟
 
 - ⚡ **سریع و کم‌تأخیر** — حالت ویژه‌ی گیم با کمترین پرش (jitter)
 - 🛡️ **مقاوم در برابر فیلترینگ** — چند transport، از جمله ترافیکِ شبیه‌نویز و ضدِ active-probe
@@ -40,16 +40,16 @@
 روی **هر دو** سرور (ایران و خارج) این یک خط را اجرا کن:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SkyPass-Cloud/skypass-tunnel/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/SolarPass-cloud/solarpass-tunnel/main/install.sh | sudo bash
 ```
 
-نصب‌کننده آخرین باینری را از **Releases** می‌گیرد، آن را در `/usr/local/bin/skypass-tun`
+نصب‌کننده آخرین باینری را از **Releases** می‌گیرد، آن را در `/usr/local/bin/solarpass-tun`
 می‌گذارد، بهینه‌سازی شبکه (BBR) را اعمال می‌کند و دستور آپدیت را می‌سازد.
 
 بعد از نصب کافی است اجرا کنی:
 
 ```bash
-skypass-tun
+solarpass-tun
 ```
 
 و از منو گام‌به‌گام جلو بروی. تمام.
@@ -64,9 +64,9 @@ skypass-tun
 
 | گام | کجا | کار |
 |-----|-----|-----|
-| **۱ — لایسنس** | [پنل کاربری](https://skypass.cloud/dashboard/tunnel) | یک پلن انتخاب کن، **IP سرور ایرانت** را وارد کن → یک **license key** می‌گیری |
-| **۲ — سرور ایران** | روی سرور ایران | `skypass-tun` → گزینه‌ی **۱ (Setup Iran side)** → **IP:PORT سرور خارج**، transport و پورت‌ها را بده. در پایان یک **کدِ base64** به تو می‌دهد — کپی‌اش کن |
-| **۳ — سرور خارج** | روی سرور خارج | `skypass-tun` → گزینه‌ی **۲ (Setup Kharej side)** → کدِ **base64** مرحله‌ی قبل را **paste** کن، سپس **license key** را وارد کن |
+| **۱ — لایسنس** | [پنل کاربری](https://solarpass.org/dashboard/tunnel) | یک پلن انتخاب کن، **IP سرور ایرانت** را وارد کن → یک **license key** می‌گیری |
+| **۲ — سرور ایران** | روی سرور ایران | `solarpass-tun` → گزینه‌ی **۱ (Setup Iran side)** → **IP:PORT سرور خارج**، transport و پورت‌ها را بده. در پایان یک **کدِ base64** به تو می‌دهد — کپی‌اش کن |
+| **۳ — سرور خارج** | روی سرور خارج | `solarpass-tun` → گزینه‌ی **۲ (Setup Kharej side)** → کدِ **base64** مرحله‌ی قبل را **paste** کن، سپس **license key** را وارد کن |
 | **۴ — تمام** | — | هر دو تونل بالا می‌آیند. کاربرانت به پورت روی **سرور ایران** وصل می‌شوند |
 
 > 📄 جزئیات کامل فیلدها، جریان base64 و نمونه‌ی JSON در **[CONFIG.example.md](./CONFIG.example.md)**.
@@ -76,11 +76,16 @@ skypass-tun
 ## 🔄 به‌روزرسانی
 
 ```bash
-sudo skypass-tun-update
+sudo solarpass-tun-update
 ```
 
 همین. آخرین نسخه را از Releases می‌گیرد و تونل‌های در حال اجرا را **خودکار روی نسخه‌ی
 جدید ری‌استارت** می‌کند. (نیازی به نصب دوباره یا تنظیم مجدد نیست.)
+
+> ⬆️ **اگر قبلاً نسخه‌ی SkyPass را نصب کرده‌ای:** دستور قدیمیِ `skypass-tun-update`
+> دیگر کار نمی‌کند (به مخزن قبلی اشاره دارد). یک‌بار همان دستور نصبِ بالا را اجرا کن؛
+> تونل‌ها، کانفیگ‌ها و سرویس‌های systemd **خودکار منتقل می‌شوند** و نصب قدیمی پاک
+> می‌شود. لازم نیست چیزی را دستی تنظیم کنی یا لایسنس را دوباره وارد کنی.
 
 ---
 
@@ -112,7 +117,7 @@ sudo skypass-tun-update
 
 - سیستم‌عامل: **لینوکس** — `amd64` یا `arm64` (اوبونتو/دبیان توصیه می‌شود)
 - دسترسی **root** (برای نصب و بهینه‌سازی شبکه)
-- یک **license** فعال از [پنل کاربری](https://skypass.cloud/dashboard/tunnel)
+- یک **license** فعال از [پنل کاربری](https://solarpass.org/dashboard/tunnel)
 
 باینری استاتیک (musl) است و به هیچ کتابخانه‌ی سیستمی وابسته نیست — روی هر توزیعی اجرا می‌شود.
 
@@ -123,7 +128,7 @@ sudo skypass-tun-update
 <details>
 <summary><b>license را از کجا بگیرم؟</b></summary>
 
-از پنل کاربری، صفحه‌ی [Tunnel](https://skypass.cloud/dashboard/tunnel). یک پلن انتخاب
+از پنل کاربری، صفحه‌ی [Tunnel](https://solarpass.org/dashboard/tunnel). یک پلن انتخاب
 می‌کنی، **IP سرور ایرانت** را وارد می‌کنی و license ساخته می‌شود.
 </details>
 
@@ -149,25 +154,39 @@ sudo skypass-tun-update
 <summary><b>تونل بالا نمی‌آید و می‌گوید license نامعتبر است.</b></summary>
 
 مطمئن شو license منقضی نشده، و **IP سرور خارجی که ازش وصل می‌شوی** با IP ایرانی که در
-پنل ثبت کرده‌ای هم‌خوان است. اگر IP ایرانت عوض شده، در [پنل](https://skypass.cloud/dashboard/tunnel) به‌روزش کن.
+پنل ثبت کرده‌ای هم‌خوان است. اگر IP ایرانت عوض شده، در [پنل](https://solarpass.org/dashboard/tunnel) به‌روزش کن.
 </details>
 
 <details>
 <summary><b>بعد از آپدیت باید دوباره تنظیم کنم؟</b></summary>
 
-نه. `sudo skypass-tun-update` باینری را عوض می‌کند و تونل‌های ذخیره‌شده را خودکار روی نسخه‌ی جدید بالا می‌آورد.
+نه. `sudo solarpass-tun-update` باینری را عوض می‌کند و تونل‌های ذخیره‌شده را خودکار روی نسخه‌ی جدید بالا می‌آورد.
+</details>
+
+<details>
+<summary><b>قبلاً SkyPass داشتم؛ برای مهاجرت چه کار کنم؟</b></summary>
+
+فقط یک‌بار دستور **نصب** بالا را اجرا کن. نسخه‌ی جدید خودش:
+
+- تونل‌ها و کانفیگ‌ها را از `/etc/skypass` به `/etc/solarpass` منتقل می‌کند،
+- سرویس‌های `skypass-*.service` را متوقف و با `solarpass-*.service` جایگزین می‌کند
+  (تونل‌هایی که بالا بودند دوباره بالا می‌آیند)،
+- و باینری و دستور آپدیتِ قدیمی را پاک می‌کند.
+
+لایسنس، پورت‌ها و transport همان‌طور که بودند می‌مانند — نیازی به وارد کردن دوباره‌ی
+license یا ساختن دوباره‌ی base64 نیست.
 </details>
 
 ---
 
 ## 🛟 پشتیبانی
 
-- 🌐 پنل، لایسنس و تیکت: **[skypass.cloud/dashboard/tunnel](https://skypass.cloud/dashboard/tunnel)**
+- 🌐 پنل، لایسنس و تیکت: **[solarpass.org/dashboard/tunnel](https://solarpass.org/dashboard/tunnel)**
 
 </div>
 
 <div align="center">
 
-<sub>ساخته‌شده با ❤️ توسط تیم SkyPass</sub>
+<sub>ساخته‌شده با ❤️ توسط تیم SolarPass</sub>
 
 </div>
