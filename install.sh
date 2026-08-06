@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ────────────────────────────────────────────────────────────────────────────
-#  SkyPass Tunnel — installer / updater
+#  SolarPass Tunnel — installer / updater
 #
-#  install:  curl -fsSL https://raw.githubusercontent.com/SkyPass-Cloud/skypass-tunnel/main/install.sh | sudo bash
-#  update:   sudo skypass-tun-update
+#  install:  curl -fsSL https://raw.githubusercontent.com/SolarPass-cloud/solarpass-tunnel/main/install.sh | sudo bash
+#  update:   sudo solarpass-tun-update
 #
 #  This script downloads the latest released binary from GitHub Releases (public
 #  repo), installs it into /usr/local/bin, tunes the network, and creates a
@@ -11,12 +11,12 @@
 # ────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO="SkyPass-Cloud/skypass-tunnel"
+REPO="SolarPass-cloud/solarpass-tunnel"
 BRANCH="main"                      # branch the public install.sh lives on (for updates)
 BIN_DIR="/usr/local/bin"
-BIN_PATH="${BIN_DIR}/skypass-tun"
-UPDATE_WRAPPER="${BIN_DIR}/skypass-tun-update"
-ASSET_PREFIX="skypass-tun-linux"   # final asset: skypass-tun-linux-amd64 / -arm64
+BIN_PATH="${BIN_DIR}/solarpass-tun"
+UPDATE_WRAPPER="${BIN_DIR}/solarpass-tun-update"
+ASSET_PREFIX="solarpass-tun-linux"   # final asset: solarpass-tun-linux-amd64 / -arm64
 
 # ── colors ──
 if [ -t 1 ]; then
@@ -82,10 +82,10 @@ download_binary() {
 
 # ── network tuning (BBR + buffers) — install only ──
 tune_network() {
-  local sysctl_file="/etc/sysctl.d/99-skypass-tun.conf"
+  local sysctl_file="/etc/sysctl.d/99-solarpass-tun.conf"
   say "Applying network tuning (BBR)..."
   cat > "$sysctl_file" <<'EOF'
-# SkyPass Tunnel network tuning
+# SolarPass Tunnel network tuning
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 net.core.rmem_max = 26214400
@@ -101,15 +101,33 @@ EOF
 install_update_wrapper() {
   cat > "$UPDATE_WRAPPER" <<EOF
 #!/usr/bin/env bash
-# Update SkyPass Tunnel to the latest version.
+# Update SolarPass Tunnel to the latest version.
 curl -fsSL https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh | sudo bash -s -- update
 EOF
   chmod 0755 "$UPDATE_WRAPPER"
 }
 
+# ── retire the old skypass-named install ──
+# The new binary migrates saved tunnels and their systemd units on first run
+# (menu / restart-all), so this only removes the leftover executables and the
+# superseded sysctl drop-in — never config or units.
+cleanup_legacy() {
+  local removed=0
+  for f in \
+    "${BIN_DIR}/skypass-tun" \
+    "${BIN_DIR}/skypass-tun-update" \
+    /etc/sysctl.d/99-skypass-tun.conf \
+    /etc/sysctl.d/99-skypass.conf
+  do
+    if [ -e "$f" ]; then rm -f "$f"; removed=1; fi
+  done
+  [ "$removed" = "1" ] && say "Removed the old skypass-tun install (tunnels are migrated on first run)."
+  return 0
+}
+
 banner() {
   echo ""
-  echo -e "${C_B}  ☁️  SkyPass Tunnel${C_0}"
+  echo -e "${C_B}  ☁️  SolarPass Tunnel${C_0}"
   echo -e "  ──────────────────────────────"
   echo ""
 }
@@ -121,21 +139,34 @@ case "$SUBCMD" in
     download_binary
     tune_network
     install_update_wrapper
+    # A re-run over an existing skypass install must migrate it, not just drop a
+    # new binary next to it: `restart-all` is what moves the configs and rewrites
+    # the systemd units. On a truly fresh box there is nothing saved and this is
+    # a no-op, so it is safe to always call. Only then is the old binary removed.
+    if "$BIN_PATH" restart-all >/dev/null 2>&1; then
+      ok "Existing tunnels migrated and restarted on the new version."
+    fi
+    cleanup_legacy
     echo ""
     ok "Installation complete!"
     echo ""
-    echo -e "  To get started, run:  ${C_G}skypass-tun${C_0}"
-    echo -e "  To update later:      ${C_G}sudo skypass-tun-update${C_0}"
+    echo -e "  To get started, run:  ${C_G}solarpass-tun${C_0}"
+    echo -e "  To update later:      ${C_G}sudo solarpass-tun-update${C_0}"
     echo ""
     ;;
   update)
     banner
     ensure_deps
     download_binary
-    # If any tunnels are saved, bring them back up on the new binary.
+    # Refresh the wrapper too: an install from before the rename still points at
+    # the old repo, so without this the next `solarpass-tun-update` would 404.
+    install_update_wrapper
+    # restart-all also migrates any tunnels left over from a skypass install,
+    # so the old binary is only removed afterwards.
     if "$BIN_PATH" restart-all >/dev/null 2>&1; then
       ok "Saved tunnels restarted on the new version."
     fi
+    cleanup_legacy
     ok "Update complete."
     ;;
   *)
