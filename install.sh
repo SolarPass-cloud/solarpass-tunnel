@@ -125,6 +125,21 @@ cleanup_legacy() {
   return 0
 }
 
+# ── restart the management agent, if this box has one ──
+# The agent (installed by agent-install.sh, used by the inbound orchestrator) is
+# a systemd unit of its own, so `restart-all` — which only covers tunnels — does
+# not touch it. Without this it keeps running the OLD binary after an update and
+# reports a stale version to the panel while the tunnels are already current.
+restart_agent() {
+  command -v systemctl >/dev/null 2>&1 || return 0
+  systemctl list-unit-files 2>/dev/null | grep -q '^solarpass-agent\.service' || return 0
+  if systemctl restart solarpass-agent >/dev/null 2>&1; then
+    ok "Management agent restarted on the new version."
+  else
+    warn "Agent restart failed; run: systemctl restart solarpass-agent"
+  fi
+}
+
 banner() {
   echo ""
   echo -e "${C_B}  ☁️  SolarPass Tunnel${C_0}"
@@ -146,6 +161,7 @@ case "$SUBCMD" in
     if "$BIN_PATH" restart-all >/dev/null 2>&1; then
       ok "Existing tunnels migrated and restarted on the new version."
     fi
+    restart_agent
     cleanup_legacy
     echo ""
     ok "Installation complete!"
@@ -166,6 +182,7 @@ case "$SUBCMD" in
     if "$BIN_PATH" restart-all >/dev/null 2>&1; then
       ok "Saved tunnels restarted on the new version."
     fi
+    restart_agent
     cleanup_legacy
     ok "Update complete."
     ;;
