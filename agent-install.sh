@@ -67,11 +67,27 @@ if ! command -v curl >/dev/null 2>&1; then
 fi
 
 # ── باینری ─────────────────────────────────────────────────────────────────
-# اگر از قبل هست دست نمی‌زنیم: ناوگان ترکیبی است و یک سرورِ در حال کار نباید
-# فقط به‌خاطر نصب agent باینریِ تونلش عوض شود. آپدیت کار جداگانه‌ای است
-# (`solarpass-tun-update`).
+# اگر باینری هست ولی زیرفرمان `agent` را ندارد، باید آپدیت شود. نسخه‌های پیش از
+# ۱.۳.۰ این زیرفرمان را ندارند و نصب با
+# «unrecognized subcommand 'agent'» شکست می‌خورد — پس صرفِ وجودِ فایل کافی نیست.
+#
+# در غیر این صورت دست نمی‌زنیم: ناوگان ترکیبی است و یک سرورِ در حال کار نباید
+# فقط به‌خاطر نصب agent باینریِ تونلش عوض شود.
+needs_binary=0
 if [[ -x "$BIN_PATH" ]]; then
-  echo "==> solarpass-tun already installed ($("$BIN_PATH" --version 2>/dev/null || echo unknown))"
+  current_ver="$("$BIN_PATH" --version 2>/dev/null || echo unknown)"
+  if "$BIN_PATH" agent --help >/dev/null 2>&1; then
+    echo "==> solarpass-tun already installed and agent-capable (${current_ver})"
+  else
+    echo "==> installed binary (${current_ver}) has no 'agent' subcommand — upgrading"
+    needs_binary=1
+  fi
+else
+  needs_binary=1
+fi
+
+if [[ "$needs_binary" == "0" ]]; then
+  : # nothing to do
 elif [[ -n "$BINARY_URL" ]]; then
   case "$(uname -m)" in
     x86_64|amd64)  ARCH="amd64" ;;
@@ -90,11 +106,28 @@ elif [[ -n "$BINARY_URL" ]]; then
   install -m 0755 "$tmp" "$BIN_PATH"
   rm -f "$tmp"
 else
-  echo "==> installing solarpass-tun via the repo installer"
-  curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh" | bash -s -- install
+  # Upgrading an existing install goes through `update`, not `install`: update
+  # replaces the binary and restarts the running tunnels on it, whereas install
+  # would also re-apply sysctl tuning and legacy cleanup that a working server
+  # does not need.
+  if [[ -x "$BIN_PATH" ]]; then
+    echo "==> upgrading solarpass-tun via the repo installer"
+    curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh" | bash -s -- update
+  else
+    echo "==> installing solarpass-tun via the repo installer"
+    curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh" | bash -s -- install
+  fi
 fi
 
 [[ -x "$BIN_PATH" ]] || { echo "error: solarpass-tun was not installed" >&2; exit 1; }
+
+# The whole point of the upgrade path above: fail here with a message that names
+# the cause, instead of letting `agent setup` die with "unrecognized subcommand".
+if ! "$BIN_PATH" agent --help >/dev/null 2>&1; then
+  echo "error: the installed solarpass-tun ($("$BIN_PATH" --version 2>/dev/null || echo unknown)) has no 'agent' subcommand." >&2
+  echo "       The published release is older than the agent feature — publish a newer release first." >&2
+  exit 1
+fi
 
 # ── فایروال ────────────────────────────────────────────────────────────────
 # بدون این، سایت هرگز به agent نمی‌رسد و همه‌چیز «unreachable» تشخیص داده می‌شود.
